@@ -7,17 +7,29 @@
         <script type="text/javascript" src="http://mbostock.github.com/d3/d3.geom.js?1.25.0"></script>
         <script type="text/javascript" src="http://mbostock.github.com/d3/d3.layout.js?1.25.0"></script>
         <script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.0/jquery.min.js" type="text/javascript"></script>
+        <link href='http://fonts.googleapis.com/css?family=Ubuntu:300,400,500' rel='stylesheet' type='text/css'>
     </head>
 <style>
 body {
-    font-family: "HelveticaNeue-Light", "Helvetica Neue Light",
-             "Helvetica Neue", sans-serif;
+    font-family: 'Ubuntu', sans-serif;
     font-weight: 300;
+    margin:0;
+    color:#1a1a1a;
 }
+
+h2 {
+    font-weight:300;
+    text-align:center;
+}
+
+p {
+    font: 90%/1.6em "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif    
+}
+
 #chart {
-    display:block;
+    display:none;
     position:relative;
-    margin: 0 auto;
+    margin: 10px auto;
     width:960px;
     
 }
@@ -39,8 +51,13 @@ svg {
     
 }
 
+#nytSection {
+    display:none;
+}
+
 #nytSection h2 {
     text-align:center;
+    font-weight:300;
 }
 
 .link {
@@ -94,13 +111,117 @@ div.tooltip:before{
     top:8px;
 }
 
+#cMap-navigation-bar {
+    width:100%;
+    background-color:#402e26;
+    height:40px;
+    -webkit-box-shadow:  0px 1px 2px 0px rgba(0, 0, 0, 0.40);
+    box-shadow:  0px 1px 2px 0px rgba(0, 0, 0, 0.40);
+}
+
+#cMap-logo {
+    margin:7px 0 0 9%;
+    height:64px;
+}
+
+.cMap-content-wrapper {
+    width:960px;
+    display:block;
+    margin:0 auto;
+    background:#fff;
+}
+
+p.article_title {
+    font-weight:300;
+}
+
+#stories-loading {
+    display:none;
+    position:absolute;
+    left:36%;
+    top:0;
+    z-index:0;
+}
+
+#stories-loading img {
+    display:block;
+    margin:200px auto 0 auto;
+}
+#stories-loading h3 {
+    text-align:center;
+    margin-top:20px;
+    font-weight:300;
+}
+#chattermap-landing-frame h2{
+    margin-top:50px;
+}
+#cMap-product-concept {
+    display:block;
+    margin:20px auto 5px;
+    width:600px;
+    border:1px solid #efefef;
+}
+#chattermap-landing-frame p {
+    text-align:center;
+    margin:5px 0;
+}
+#chattermap-landing-frame span#kickin-it-off {
+    padding:8px 20px;
+    background: #2960b5; /* Old browsers */
+    background: -moz-linear-gradient(top,  #2960b5 0%, #0e51af 100%); /* FF3.6+ */
+    background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#2960b5), color-stop(100%,#0e51af)); /* Chrome,Safari4+ */
+    background: -webkit-linear-gradient(top,  #2960b5 0%,#0e51af 100%); /* Chrome10+,Safari5.1+ */
+    background: -o-linear-gradient(top,  #2960b5 0%,#0e51af 100%); /* Opera 11.10+ */
+    background: -ms-linear-gradient(top,  #2960b5 0%,#0e51af 100%); /* IE10+ */
+    background: linear-gradient(to bottom,  #2960b5 0%,#0e51af 100%); /* W3C */
+    filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#2960b5', endColorstr='#0e51af',GradientType=0 ); /* IE6-9 */
+    width:175px;
+    text-align:center;
+    color:#fff;
+    font-family:"HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif;
+    font-size:14px;
+    display:block;
+    margin:10px auto;
+    cursor:pointer;
+    -webkit-border-radius: 3px;
+    -moz-border-radius: 3px;
+    border-radius: 3px;
+    text-shadow: 0px 1px 0px rgba(0, 0, 0, 0.8);
+}
+#chattermap-landing-frame span#kickin-it-off:hover {
+    background: #0e51af; /* Old browsers */
+    background: -moz-linear-gradient(top,  #0e51af 0%, #2960b5 99%); /* FF3.6+ */
+    background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#0e51af), color-stop(99%,#2960b5)); /* Chrome,Safari4+ */
+    background: -webkit-linear-gradient(top,  #0e51af 0%,#2960b5 99%); /* Chrome10+,Safari5.1+ */
+    background: -o-linear-gradient(top,  #0e51af 0%,#2960b5 99%); /* Opera 11.10+ */
+    background: -ms-linear-gradient(top,  #0e51af 0%,#2960b5 99%); /* IE10+ */
+    background: linear-gradient(to bottom,  #0e51af 0%,#2960b5 99%); /* W3C */
+    filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#0e51af', endColorstr='#2960b5',GradientType=0 ); /* IE6-9 */
+
+}
 </style>
 <body>
-<div id="nytSection">
-    <h2>Top Stories from Reddit</h2>
-</div>
-<!--This is where the comments are added on hover -->
-<div id="chart"></div>
+    <div id="cMap-navigation-bar">
+        <img id="cMap-logo" src="images/cMap-logo-transparent-v2_2.png" />
+    </div>
+    
+    <div class="cMap-content-wrapper">
+        <div id="chattermap-landing-frame">
+            <h2>Chattermap is reinventing conversations on the web.</h2>
+            <img id="cMap-product-concept" src="images/chattermap-product-teaser-v.jpg" />
+            <p>Ready to see how Chattermap can work for your website?</p>
+            <span id="kickin-it-off">Launch Chattermap Demo</span>
+        </div>
+        <div id="stories-loading">
+            <img src="images/cMap-loading.gif" />
+            <h3><em>Loading the most popular stories on Reddit.</em></h3>
+        </div>
+        <div id="nytSection">
+            <h2>Top Stories from Reddit</h2>
+        </div>
+        <!--This is where the comments are added on hover -->
+        <div id="chart"></div>
+    </div>
 <script src="d3test-reddit-v4.js"></script>
 </body>
 </html>
