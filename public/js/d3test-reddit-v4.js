@@ -14,11 +14,15 @@ function handleRequest(data,callback) {
 }
 
 function displayArticle(article) {
+  //console.log(article);
   //Create the HTML for the returned article from Reddit
   var articleURL= article['data']['permalink'];
+  var originalURL = article['data']['url'];
   var articleTitle= article['data']['title'];
+  var numberOfComments = article['data']['num_comments'];
   var article_html = "<div class='article'>";
-  article_html += "<p class='article_title' href=" + "'http://www.reddit.com" + articleURL + "'>"+ articleTitle + "</p>";
+
+  article_html += "<p class='article_title' data-url='" + originalURL + "' data-num-comments='"+ numberOfComments +"' href=" + "'http://www.reddit.com" + articleURL + "'>"+ articleTitle + "</p>";
   article_html += "</div>";
   //Get the comments of the reddit article, and only display if there are more than 30 comments
   redditArticleURL = "http://www.reddit.com" + articleURL + ".json?jsonp=?";
@@ -26,7 +30,6 @@ function displayArticle(article) {
   $.getJSON(redditArticleURL, handleRequest1)
   function handleRequest1(dataComments) {
     var resultsCommunity = dataComments[0]['data']['children'][0]['data'];
-    comments = resultsCommunity['num_comments'];
     //If the article has comments, add it to the page as a selection
     //if(comments >= 100) {
       $('#nytSection').append(article_html);
@@ -54,9 +57,13 @@ $('#chattermap-landing-frame span#kickin-it-off').click(function() {
 //Pass the selected article to the Community API
 $(document).on("click", ".article_title", function() {
   $('#nytSection').hide();
-  currentURL = $(this).attr("href");
+  var currentURL = $(this).attr("href");
+  var originalURL = $(this).attr("data-url");
+  var articleTitle = $(this).html();
+  var numberOfComments = $(this).attr("data-num-comments"); 
+
   //Pass the current URL of the article into the force layout to create Chattermap
-  initiateForceJS(currentURL);
+  initiateForceJS(currentURL, originalURL, articleTitle, numberOfComments);
 });
 
     //Force Layout Code
@@ -77,10 +84,14 @@ $(document).on("click", ".article_title", function() {
     //Tooltip for the comment body
     var div = d3.select("#chart").append("div")   
     .attr("class", "tooltip")               
-    .style("opacity", 0);
+    .style("opacity", 1);
+
+
+   
         
-    function initiateForceJS(currentURL) {
+    function initiateForceJS(currentURL, originalURL, articleTitle, numberOfComments) {     
         $('#chart').show();
+        $('#chart').before('<a class="original-article-link" target="_blank" href="' + originalURL +'">' + articleTitle + '</a><h4 class="number-of-comments">' + numberOfComments + ' Comments</h4>');
         //Generate the URL
         forceRedditURL = currentURL + ".json?jsonp=?";
         $('#commentArea').show();
@@ -143,6 +154,17 @@ $(document).on("click", ".article_title", function() {
       
       node.append("comment").text(function(d) { return d.body });
       //This will put the comment in the Comment Area div
+
+       //On load, assign the root node to the tooltip
+       numberOfNodes = node[0].length;
+       rootNode = d3.select(node[0][parseInt(numberOfNodes) - 1]);
+       rootNodeComment = rootNode.select("comment").text()
+
+       div .html(rootNodeComment)
+               //Position the tooltip based on the position of the current node, and it's size
+                .style("left", (rootNode.attr("cx") - (-rootNode.attr("r")) - (-9)) + "px")   
+                .style("top", (rootNode.attr("cy") - 15)  + "px");    
+      //div.html()
       node.on("mouseover", function() {
          currentNode = d3.select(this);
          currentTitle = currentNode.select("comment").text();
@@ -160,7 +182,7 @@ $(document).on("click", ".article_title", function() {
       node.on("mouseout", function(d) {       
             div.transition()        
                 .duration(500)      
-                .style("opacity", 0);
+                .style("opacity", 1);
       });
     } 
     
