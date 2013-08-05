@@ -14,7 +14,6 @@ function handleRequest(data,callback) {
 }
 
 function displayArticle(article) {
-  //console.log(article);
   //Create the HTML for the returned article from Reddit
   var articleURL= article['data']['permalink'];
   var originalURL = article['data']['url'];
@@ -99,6 +98,7 @@ $(document).on("click", ".article_title", function() {
         function handleRequest2(json) {
             //Set the root as the first comment returned by reddit
             root = json[1]['data']['children'][0];
+            console.log(root);
             update();
         }
     }
@@ -133,7 +133,7 @@ $(document).on("click", ".article_title", function() {
       // Exit any old links.
       link.exit().remove();
     
-      // Update the nodes…
+      // Update the nodes
       node = vis.selectAll("circle.node")
           .data(nodes, function(d) {return d.id; })
           .style("fill", color);
@@ -170,7 +170,7 @@ $(document).on("click", ".article_title", function() {
          currentTitle = currentNode.select("comment").text();
         div.transition()        
                 .duration(200)      
-                .style("opacity", .9);
+                .style("opacity", 1);
         
         
         div .html(currentTitle)
