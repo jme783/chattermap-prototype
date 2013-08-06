@@ -39,6 +39,7 @@ svg {
   opacity:0.6;,
   transition: opacity ease-out 0.3s;
   -webkit-transition: opacity ease-out 0.3s; /* Safari */
+  cursor: pointer;
 }
 
 .node:hover {

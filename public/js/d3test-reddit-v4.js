@@ -98,7 +98,6 @@ $(document).on("click", ".article_title", function() {
         function handleRequest2(json) {
             //Set the root as the first comment returned by reddit
             root = json[1]['data']['children'][0];
-            console.log(root);
             update();
         }
     }
@@ -106,7 +105,11 @@ $(document).on("click", ".article_title", function() {
     function update() {
          nodes = flatten(root),
          links = optimize(d3.layout.tree().links(nodes));
-         
+         avgNetPositive = getAvgNetPositive();
+         maxNetPositive = d3.max(netPositiveArray);
+         minNetPositive = d3.min(netPositiveArray);
+         // Create a logarithmic scale that sizes the nodes
+         radius = d3.scale.pow().exponent(.3).domain([minNetPositive,maxNetPositive]).range([5,40]);
          root.data.fixed = true;
          root.data.x = w/2;
          root.data.y = 30;
@@ -117,8 +120,12 @@ $(document).on("click", ".article_title", function() {
           .charge(-350)
           .gravity(0)
           .start();
-    
-      // Update the linksÉ
+      
+
+      
+
+      
+      // Update the links
       link = vis.selectAll("line.link")
           .data(links, function(d) { return d.target.id; });
     
@@ -143,7 +150,7 @@ $(document).on("click", ".article_title", function() {
           .attr("class", "node")
           .attr("cx", function(d) {return d.x; })
           .attr("cy", function(d) {return d.y; })
-          .attr("r", 10)
+          .attr("r", sizeNodes)
           .style("fill", color)
           //.on("click", click)
           .call(force.drag);
@@ -205,39 +212,17 @@ $(document).on("click", ".article_title", function() {
     
     // Color leaf nodes orange, and packages white or blue.
     function color(d) {
-        var upvotes = d.ups;
-        var downvotes = d.downs;
-        var totalvotes = upvotes + downvotes;
-        var percentagePositive = (upvotes/totalvotes)*100;
-        
-        if (percentagePositive >= 90 && percentagePositive <= 100) {
-          return "#5c9928";
-        }
-        else if (percentagePositive >= 80 && percentagePositive < 90) {
-          return "#69a12c";
-        }
-        else if (percentagePositive >= 70 && percentagePositive < 80) {
-          return "#94bc3b";
-        }
-        else if (percentagePositive >= 60 && percentagePositive < 70) {
-          return "#c3d74a";
-        }
-        else if (percentagePositive >= 50 && percentagePositive < 60) {
-          return "#e1dc52";
-        }
-        else if (percentagePositive >= 40 && percentagePositive < 50) {
-          return "#dcbd4c";
-        }
-        else if (percentagePositive >= 30 && percentagePositive < 40) {
-          return "#c2823e";
-        }
-        else if (percentagePositive >= 20 && percentagePositive < 30) {
-          return "#a6482f";
-        }
-        else {
-          return "#992d28";
-        }  
-}
+        return '#2960b5'
+    }
+
+    function sizeNodes(d) {
+      //Get the net positive reaction
+      var netPositive = d.ups - d.downs;
+      var relativePositivity = netPositive/avgNetPositive;
+      //Scale the radii based on the logarithmic scale defined earlier
+      return radius(netPositive);
+      
+    }
     
     // Toggle children on click.
     function click(d) {
@@ -295,5 +280,21 @@ $(document).on("click", ".article_title", function() {
         }
         return optimizedArray;
     
+    }
+
+    function getAvgNetPositive() {
+      var sum = 0;
+      netPositiveArray = []
+      //Select all the nodes
+      var allNodes = d3.selectAll(nodes)[0];
+      //For each node, get the net positive votes and add it to the sum
+      for (i=0; i < allNodes.length; i++) {
+        var netPositiveEach = allNodes[i]["ups"] - allNodes[i]["downs"];
+        sum += netPositiveEach;
+        netPositiveArray.push(netPositiveEach);
+      }
+      var avgNetPositive = sum/allNodes.length;
+      return avgNetPositive;
+
     }
     
