@@ -109,15 +109,15 @@ $(document).on("click", ".article_title", function() {
          maxNetPositive = d3.max(netPositiveArray);
          minNetPositive = d3.min(netPositiveArray);
          // Create a logarithmic scale that sizes the nodes
-         radius = d3.scale.pow().exponent(.3).domain([minNetPositive,maxNetPositive]).range([5,40]);
+         radius = d3.scale.pow().exponent(.3).domain([minNetPositive,maxNetPositive]).range([5,30]);
          root.data.fixed = true;
          root.data.x = w/2;
-         root.data.y = 30;
+         root.data.y = 50;
       // Restart the force layout.
       force
           .nodes(nodes)
           .links(links)
-          .charge(-350)
+          .charge(-250)
           .gravity(0)
           .start();
       
@@ -151,6 +151,31 @@ $(document).on("click", ".article_title", function() {
           .attr("cx", function(d) {return d.x; })
           .attr("cy", function(d) {return d.y; })
           .attr("r", sizeNodes)
+          .attr("opacity",function(d) {
+            var thisNode = d3.select(this);
+            var thisRadius = thisNode[0][0]["r"]["animVal"]["value"];
+            if (thisRadius <= 10) {
+              
+              return 0.3;
+
+            } else if (thisRadius <= 15) {
+
+              return 0.5;
+            
+            } else if (thisRadius <= 20) {
+
+              return 0.6;
+
+            } else if (thisRadius <= 25) {
+
+              return 0.8;
+
+            } else {
+
+              return 0.9;
+
+            }
+          })
           .style("fill", color)
           //.on("click", click)
           .call(force.drag);
@@ -193,8 +218,10 @@ $(document).on("click", ".article_title", function() {
       });
     } 
     
-    
     function tick(e) {
+  
+
+
        var kx = .4 * e.alpha, ky = 1.4 * e.alpha;
        links.forEach(function(d, i) {
           d.target.x += (d.source.x - d.target.x) * kx;
@@ -297,4 +324,6 @@ $(document).on("click", ".article_title", function() {
       return avgNetPositive;
 
     }
+
+   
     
