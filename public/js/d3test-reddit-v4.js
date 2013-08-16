@@ -1,3 +1,13 @@
+//Reset the application when the chattermap logo is clicked
+$('#cMap-logo').click(function() {
+    $('#chattermap-landing-frame').show();
+    $('#stories-loading, #chart, #nytSection, #chart div.tooltip').hide();
+    $('#chart svg, #chart div.tooltip').empty();
+    $('.original-article-link, .number-of-comments').remove();
+
+});
+
+
 
 //BEGIN Reddit API CODE
 
@@ -99,8 +109,11 @@ $(document).on("click", ".article_title", function() {
             //Set the root as the first comment returned by reddit
             root = json[1]['data']['children'][0];
             update();
+            $('#chart div.tooltip').show();
         }
+
     }
+
     
     function update() {
          nodes = flatten(root),
