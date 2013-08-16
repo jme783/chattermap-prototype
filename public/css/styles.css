@@ -1,6 +1,6 @@
 
 body {
-    font-family: 'Ubuntu', sans-serif;
+    font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif; 
     font-weight: 300;
     margin:0;
     color:#1a1a1a;
@@ -137,35 +137,53 @@ p.article_title {
 #stories-loading {
     display:none;
     position:absolute;
-    left:36%;
+    left:30%;
     top:0;
     z-index:0;
 }
 
 #stories-loading img {
     display:block;
-    margin:200px auto 0 auto;
+    margin:150px auto 0 auto;
 }
 #stories-loading h3 {
     text-align:center;
     margin-top:20px;
     font-weight:300;
+    line-height: 32px;
 }
 #chattermap-landing-frame h2{
-    margin-top:50px;
+    font-size:24px;
+    color:#7b7b7b;
+    position: absolute;
+    top:46px;
+    left:225px;
+    font-weight: normal;
+    text-align: left;
+    line-height: 29px;
+    text-shadow:0 1px #fff;
+    margin:0;
+
 }
 #cMap-product-concept {
     display:block;
     margin:20px auto 5px;
-    width:600px;
-    border:1px solid #efefef;
+    width:960px;
+    height:540px;
 }
+#call-to-action-container {
+    position: absolute;
+    top:180px;
+    left:355px;
+}
+
 #chattermap-landing-frame p {
     text-align:center;
     margin:5px 0;
+    font-size:15px;
 }
 #chattermap-landing-frame span#kickin-it-off {
-    padding:8px 20px;
+    padding:9px 15px;
     background: #2960b5; /* Old browsers */
     background: -moz-linear-gradient(top,  #2960b5 0%, #0e51af 100%); /* FF3.6+ */
     background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#2960b5), color-stop(100%,#0e51af)); /* Chrome,Safari4+ */
@@ -178,7 +196,7 @@ p.article_title {
     text-align:center;
     color:#fff;
     font-family:"HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif;
-    font-size:14px;
+    font-size:18px;
     display:block;
     margin:10px auto;
     cursor:pointer;
@@ -186,6 +204,7 @@ p.article_title {
     -moz-border-radius: 3px;
     border-radius: 3px;
     text-shadow: 0px 1px 0px rgba(0, 0, 0, 0.8);
+    letter-spacing: 1px;
 }
 #chattermap-landing-frame span#kickin-it-off:hover {
     background: #0e51af; /* Old browsers */
