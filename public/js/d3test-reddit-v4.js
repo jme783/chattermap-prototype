@@ -9,6 +9,8 @@ $('#cMap-logo').click(function() {
 
 
 
+
+
 //BEGIN Reddit API CODE
 
 //Get Reddit's top articles from the news sub-reddit
@@ -108,6 +110,7 @@ $(document).on("click", ".article_title", function() {
         function handleRequest2(json) {
             //Set the root as the first comment returned by reddit
             root = json[1]['data']['children'][0];
+            //console.log(root);
             update();
             $('#chart div.tooltip').show();
         }
@@ -134,9 +137,6 @@ $(document).on("click", ".article_title", function() {
           .gravity(0)
           .start();
       
-
-      
-
       
       // Update the links
       link = vis.selectAll("line.link")
@@ -195,17 +195,20 @@ $(document).on("click", ".article_title", function() {
     
       // Exit any old nodes.
       node.exit().remove();
-      //This will add the name of the character to the node
+      //This will add the name of the author to the node HTML
+      node.append("author").text(function(d) {return d.author});
       
-      node.append("comment").text(function(d) { return d.body });
-      //This will put the comment in the Comment Area div
+      //Add the body of the comment to the node
+      node.append("comment").text(function(d) {return Encoder.htmlDecode(d.body_html)});
+      
 
        //On load, assign the root node to the tooltip
        numberOfNodes = node[0].length;
        rootNode = d3.select(node[0][parseInt(numberOfNodes) - 1]);
-       rootNodeComment = rootNode.select("comment").text()
+       rootNodeComment = rootNode.select("comment").text();
+       rootNodeAuthor = rootNode.select("author").text();
 
-       div .html(rootNodeComment)
+       div .html("<span class='commentAuthor'>" + rootNodeAuthor + "</span><br>" + rootNodeComment)
                //Position the tooltip based on the position of the current node, and it's size
                 .style("left", (rootNode.attr("cx") - (-rootNode.attr("r")) - (-9)) + "px")   
                 .style("top", (rootNode.attr("cy") - 15)  + "px");    
@@ -213,12 +216,14 @@ $(document).on("click", ".article_title", function() {
       node.on("mouseover", function() {
          currentNode = d3.select(this);
          currentTitle = currentNode.select("comment").text();
+         currentAuthor = currentNode.select("author").text();
         div.transition()        
                 .duration(200)      
                 .style("opacity", 1);
         
         
-        div .html(currentTitle)
+        div .html("<span class='commentAuthor'>" + currentAuthor + "</span><br>" + currentTitle)
+
                 //Position the tooltip based on the position of the current node, and it's size
                 .style("left", (currentNode.attr("cx") - (-currentNode.attr("r")) - (-9)) + "px")   
                 .style("top", (currentNode.attr("cy") - 15)  + "px");    
@@ -229,6 +234,8 @@ $(document).on("click", ".article_title", function() {
                 .duration(500)      
                 .style("opacity", 1);
       });
+
+      
     } 
     
     function tick(e) {
@@ -338,5 +345,9 @@ $(document).on("click", ".article_title", function() {
 
     }
 
-   
+    
+     setInterval(function(){ 
+       $("#chart a[href^='http://']").attr("target","_blank");
+        $("#chart a[href^='https://']").attr("target","_blank");
+     }, 1000);
     

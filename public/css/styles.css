@@ -83,14 +83,13 @@ div.tooltip {
   text-align: left;           
   width: 400px;                  
   height: auto;                 
-  padding: 10px;             
-  font: 14px sans-serif;   
+  padding: 10px;               
   line-height: 21px;     
   background: rgba(248, 248, 248, 0.58);   
   border: 0;      
   border-radius: 4px;           
   pointer-events: none;
-  text-shadow: 0px 1px 0px rgba(255, 255, 255, 1);
+  
 }
 
 div.tooltip:before{
@@ -106,6 +105,26 @@ div.tooltip:before{
 
     top:8px;
 }
+
+div.tooltip p {
+    text-shadow: 0px 1px 0px rgba(255, 255, 255, 1);
+    margin:0;
+}
+
+div.tooltip blockquote {
+    margin-bottom:7px;
+    margin-top:7px;
+}
+
+div.tooltip blockquote p {
+    font-size: 12px;
+    font-style: italic;
+} 
+
+div.tooltip a {
+    pointer-events:auto;
+}
+
 
 #cMap-navigation-bar {
     width:100%;
@@ -238,4 +257,11 @@ h4.number-of-comments {
     font-weight: 100;
     color:#494949;
     font-size:14px;
+}
+
+/* Style the comment author */
+span.commentAuthor {
+    font-weight: bold;
+    color:#2960b5;
+    font-size:0.9em;
 }
