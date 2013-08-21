@@ -265,3 +265,16 @@ span.commentAuthor {
     color:#2960b5;
     font-size:0.9em;
 }
+/* Timestamp styling */
+span.timestamp {
+    color:#b4b4b4;
+    font-size:0.9em;
+
+}
+span.bulletTimeAgo {
+    padding:0 8px;
+    font-size:60%;
+    color:#b4b4b4;
+    line-height: 1em;
+    vertical-align: middle;
+}

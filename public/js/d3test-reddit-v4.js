@@ -200,6 +200,9 @@ $(document).on("click", ".article_title", function() {
       
       //Add the body of the comment to the node
       node.append("comment").text(function(d) {return Encoder.htmlDecode(d.body_html)});
+
+      //Add the UNIX timestamp to the node
+      node.append("timestamp").text(function(d) {return moment.unix(d.created_utc).fromNow();})
       
 
        //On load, assign the root node to the tooltip
@@ -207,8 +210,9 @@ $(document).on("click", ".article_title", function() {
        rootNode = d3.select(node[0][parseInt(numberOfNodes) - 1]);
        rootNodeComment = rootNode.select("comment").text();
        rootNodeAuthor = rootNode.select("author").text();
+       rootNodeTimestamp = rootNode.select("timestamp").text();
 
-       div .html("<span class='commentAuthor'>" + rootNodeAuthor + "</span><br>" + rootNodeComment)
+       div .html("<span class='commentAuthor'>" + rootNodeAuthor + "</span><span class='bulletTimeAgo'>&bull;</span><span class='timestamp'>" + rootNodeTimestamp + "</span><br>" + rootNodeComment)
                //Position the tooltip based on the position of the current node, and it's size
                 .style("left", (rootNode.attr("cx") - (-rootNode.attr("r")) - (-9)) + "px")   
                 .style("top", (rootNode.attr("cy") - 15)  + "px");    
@@ -217,12 +221,13 @@ $(document).on("click", ".article_title", function() {
          currentNode = d3.select(this);
          currentTitle = currentNode.select("comment").text();
          currentAuthor = currentNode.select("author").text();
+         currentTimestamp = currentNode.select("timestamp").text();
         div.transition()        
                 .duration(200)      
                 .style("opacity", 1);
         
         
-        div .html("<span class='commentAuthor'>" + currentAuthor + "</span><br>" + currentTitle)
+        div .html("<span class='commentAuthor'>" + currentAuthor + "</span><span class='bulletTimeAgo'>&bull;</span><span class='timestamp'>" + currentTimestamp + "</span><br>" + currentTitle)
 
                 //Position the tooltip based on the position of the current node, and it's size
                 .style("left", (currentNode.attr("cx") - (-currentNode.attr("r")) - (-9)) + "px")   
