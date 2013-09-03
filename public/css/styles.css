@@ -152,6 +152,10 @@ div.tooltip a {
 
 p.article_title {
     font-weight:300;
+    margin:0;
+    padding:10px;
+    font-size:16px;
+    text-align: center;
 }
 
 #stories-loading {
@@ -277,4 +281,17 @@ span.bulletTimeAgo {
     color:#b4b4b4;
     line-height: 1em;
     vertical-align: middle;
+}
+
+/* STYLE THE ARTICLE SELECT PAGE */
+.article {
+    border-bottom:1px solid #efefef;
+}
+.article:hover {
+    background:#fafafa;
+    text-shadow: 0px 1px 0px rgba(255, 255, 255, 1);
+    color:#2960b5;
+}
+#nytSection .article:first-child {
+    border-top:1px solid #efefef;
 }
