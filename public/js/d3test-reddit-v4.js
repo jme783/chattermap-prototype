@@ -60,7 +60,7 @@ $('#chattermap-landing-frame span#kickin-it-off').click(function() {
       setTimeout(function(){
         $('#stories-loading').fadeOut("fast");
         $('#nytSection').show();
-      }, 4000);
+      }, 3000);
       
 });
 
@@ -156,7 +156,6 @@ $(document).on("click", ".article_title", function() {
       // Update the nodes
       node = vis.selectAll("circle.node")
           .data(nodes, function(d) {return d.id; })
-          .style("fill", color);
     
       // Enter any new nodes.
       node.enter().append("svg:circle")
@@ -189,7 +188,7 @@ $(document).on("click", ".article_title", function() {
 
             }
           })
-          .style("fill", color)
+          
           //.on("click", click)
           .call(force.drag);
     
@@ -202,7 +201,12 @@ $(document).on("click", ".article_title", function() {
       node.append("comment").text(function(d) {return Encoder.htmlDecode(d.body_html)});
 
       //Add the UNIX timestamp to the node
-      node.append("timestamp").text(function(d) {return moment.unix(d.created_utc).fromNow();})
+      node.append("timestamp").text(function(d) {return moment.unix(d.created_utc).fromNow();});
+
+
+      //Timeout function set to wait until the sentiment analysis API calls are made
+      setTimeout(function() {node.transition().style("fill",color);},3000); //function() {node.style("fill", color)};
+
       
 
        //On load, assign the root node to the tooltip
@@ -264,7 +268,25 @@ $(document).on("click", ".article_title", function() {
     
     // Color leaf nodes orange, and packages white or blue.
     function color(d) {
-        return '#2960b5'
+        var data = d;
+        var score = d.sentimentScore;
+        if (typeof score != 'undefined') {
+          //If the comment has a positive tone, color it green
+          if (score > 0 ) {
+            return "#109c49";
+          }
+          //If the comment has a negative tone, color it red
+          else if (score < 0 ) {
+            return "#a23600";
+          //If the comment is neutral, color it blue
+          } else {
+            return "#2960b5";
+          }
+        } else {
+          //setInterval(function() {color(d)} , 1000);
+          return "#2960b5";
+          
+        }
     }
 
     function sizeNodes(d) {
@@ -313,6 +335,22 @@ $(document).on("click", ".article_title", function() {
                 node.data.children = "";
             }
             var comment = node.data;
+            // Add the sentiment score to the node by making an API request to the Mashape language processing API
+            $.ajax({
+              //Make a GET call and pass the text of the comment to the language processor
+              url: 'https://loudelement-free-natural-language-processing-service.p.mashape.com/nlp-text/?text=' + encodeURI(comment.body), // The URL to the API. You can get this by clicking on "Show CURL example" from an API profile
+              type: 'GET', // The HTTP Method
+              data: {}, // Additional parameters here
+              datatype: 'json',
+              // On a successful return, append the sentiment score to the comment
+              success: function(data) { comment.sentimentScore = data['sentiment-score']; },
+              // If the API returns an error, then it means the sentiment is neutral for that node
+              error: function(err) { comment.sentimentScore = 0; },
+              beforeSend: function(xhr) {
+                xhr.setRequestHeader("X-Mashape-Authorization", "Kdayfj8BSFinv2IjAvxWTCcyS5wNm9Cq"); // Enter here your Mashape key
+              }
+            });
+            
             nodes.push(comment);
         }
       }
@@ -355,4 +393,5 @@ $(document).on("click", ".article_title", function() {
        $("#chart a[href^='http://']").attr("target","_blank");
         $("#chart a[href^='https://']").attr("target","_blank");
      }, 1000);
+
     
