@@ -34,8 +34,7 @@ svg {
 }
 
 .node {
-  stroke: #fff;
-  stroke-width: 1.5px;
+  stroke-width: 2.5px;
   transition: opacity ease-out 0.3s;
   -webkit-transition: opacity ease-out 0.3s; /* Safari */
   cursor: pointer;
