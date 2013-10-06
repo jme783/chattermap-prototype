@@ -109,8 +109,14 @@ $(document).on("click", ".article_title", function() {
         $.getJSON(forceRedditURL,handleRequest2);
         function handleRequest2(json) {
             //Set the root as the first comment returned by reddit
-            root = json[1]['data']['children'][0];
-            //console.log(root);
+            //root = json[1]['data']['children'][0];
+            allroots = json[1]['data']['children']
+            for (var i = 0; i < allroots.length; i++) {
+              root = allroots[i];
+              if (i == 0) {
+                update(root);
+              }
+            }
             update();
             $('#chart div.tooltip').show();
         }
@@ -118,7 +124,7 @@ $(document).on("click", ".article_title", function() {
     }
 
     
-    function update() {
+    function update(root) {
          nodes = flatten(root),
          links = optimize(d3.layout.tree().links(nodes));
          avgNetPositive = getAvgNetPositive();
@@ -289,6 +295,7 @@ $(document).on("click", ".article_title", function() {
 
     // Returns a list of all nodes under the root.
     function flatten(root) {
+
       var nodes = [], i = 0, j = 0;
       function recurse(node) {
         
@@ -313,7 +320,7 @@ $(document).on("click", ".article_title", function() {
             }
             var comment = node.data;
             // Add the sentiment score to the node by making an API request to the Mashape language processing API
-            $.ajax({
+           /* $.ajax({
               //Make a GET call and pass the text of the comment to the language processor
               url: 'https://loudelement-free-natural-language-processing-service.p.mashape.com/nlp-text/?text=' + encodeURI(comment.body), // The URL to the API. You can get this by clicking on "Show CURL example" from an API profile
               type: 'GET', // The HTTP Method
@@ -326,7 +333,7 @@ $(document).on("click", ".article_title", function() {
               beforeSend: function(xhr) {
                 xhr.setRequestHeader("X-Mashape-Authorization", "Kdayfj8BSFinv2IjAvxWTCcyS5wNm9Cq"); // Enter here your Mashape key
               }
-            });
+            });*/
             
             nodes.push(comment);
         }
