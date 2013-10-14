@@ -2,7 +2,7 @@
 $('#cMap-logo').click(function() {
     $('#chattermap-landing-frame').show();
     $('#stories-loading, #chart, #nytSection, #chart div.tooltip').hide();
-    $('#chart svg, #chart div.tooltip').empty();
+    $('#chart').empty();
     $('.original-article-link, .number-of-comments').remove();
 
 });
@@ -90,489 +90,237 @@ $(document).on("click", ".article_title", function() {
         $('#commentArea').show();
         $.getJSON(forceRedditURL,handleRequest2);
         function handleRequest2(json) {
-           //Tooltip for the comment body
-                 div = d3.select("#chart").append("div")   
-
-                .attr("class", "tooltip")               
-                .style("opacity", 1);
-            //Set the root as the first comment returned by reddit
-            //root = json[1]['data']['children'][0];
-            allroots = json[1]['data']['children']
-            for (var i = 0; i < allroots.length; i++) {
-
-                if (i == 0 ) {
-                  currentRoot = allroots[i];
-                  update1(currentRoot);
+            allroots = json[1]['data']['children'];
+            (function() {
+                var index = 0;
+                function LoopThrough() {
+                    currentRoot = allroots[index];  
+                    if (index < allroots.length) {
+                        draw_graphs(currentRoot, index);  
+                        ++index;
+                        LoopThrough();
+                        };
                 }
-                else if (i == 1) {
-                  currentRoot = allroots[i];
-                  update2(currentRoot);
-                }
-            }
-            $('#chart div.tooltip').show();
+               
+            LoopThrough();
+            })(); 
+
         }
 
     }
-//Force Layout Code
-                 
-    
-    function update1(root) {
-       var w = 960,
-        h = 900,
-        node,
-        link,
-        root;
-        
-      var force = d3.layout.force()
-          .on("tick", function(e) {
-              var kx = .4 * e.alpha, ky = 1.4 * e.alpha;
-               links.forEach(function(d, i) {
-                  d.target.x += (d.source.x - d.target.x) * kx;
-                  d.target.y += (d.source.y + 100 - d.target.y) * ky;
-              });
-              link.attr("x1", function(d) { return d.source.x; })
-                  .attr("y1", function(d) { return d.source.y; })
-                  .attr("x2", function(d) { return d.target.x; })
-                  .attr("y2", function(d) { return d.target.y; });
-            
-              node.attr("cx", function(d) { return d.x; })
-                  .attr("cy", function(d) { return d.y; });
-          })
-          .size([w, h]);
-                  
-        var vis = d3.select("#chart").append("svg:svg")
-            .attr("width", w)
-            .attr("height", h);
-                  
-                 
-         nodes = flatten(root),
-         links = optimize(d3.layout.tree().links(nodes));
-         avgNetPositive = getAvgNetPositive();
-         maxNetPositive = d3.max(netPositiveArray);
-         minNetPositive = d3.min(netPositiveArray);
-         // Create a logarithmic scale that sizes the nodes
-         radius = d3.scale.pow().exponent(.3).domain([minNetPositive,maxNetPositive]).range([5,30]);
-         root.data.fixed = true;
-         root.data.x = w/2;
-         root.data.y = 50;
-      // Restart the force layout.
-      force
-          .nodes(nodes)
-          .links(links)
-          .charge(-250)
-          .gravity(0)
-          .start();
-      
-      
+  //Force Layout Code
+  function draw_graphs(root, id) {
+    var root_id = "map-" + id.toString();
+    var force;
+    var vis;
+    var link;
+    var node;
+    var w = 980;
+    var h = 1000;
+    var k = 0;
+    // Create a separate div to house each SVG graph
+      div = document.createElement("div");
+      div.style.width = "980px";
+      div.style.height = "1000px";
+      div.style.cssFloat="left";
+      div.id = root_id;
+      $(div).addClass("chattermap-map");
+      // Append the div to the chart container
+      $('#chart').append(div);
+
+    force = d3.layout.force()
+      .size([w, h])
+      .charge(-250)
+      .gravity(0)
+      .on("tick", tick);
+      // Create the SVG and append it to the created div
+    vis = d3.select("#"+root_id)
+      .append("svg:svg")
+      .attr("width", w)
+      .attr("height", h)
+      .attr("id",root_id);
+
+
+      // Put the Reddit JSON in the correct format for the Force Layout
+    nodes = flatten(root),
+    links = optimize(d3.layout.tree().links(nodes));
+    // Calculations for the sizing of the nodes
+    avgNetPositive = getAvgNetPositive();
+    maxNetPositive = d3.max(netPositiveArray);
+    minNetPositive = d3.min(netPositiveArray);
+    // Create a logarithmic scale that sizes the nodes
+    radius = d3.scale.pow().exponent(.3).domain([minNetPositive,maxNetPositive]).range([5,30]);
+    // Fix the root node to the top of the svg
+    root.data.fixed = true;
+    root.data.x = w/2;
+    root.data.y = 50;
+      // Start the force layout.
+    force
+      .nodes(nodes)
+      .links(links)
+      .start();
       // Update the links
       link = vis.selectAll("line.link")
-          .data(links, function(d) { return d.target.id; });
-    
+        .data(links, function(d) { return d.target.id; });
       // Enter any new links.
       link.enter().insert("svg:line", ".node")
-          .attr("class", "link")
-          .attr("x1", function(d) { return d.source.x; })
-          .attr("y1", function(d) { return d.source.y; })
-          .attr("x2", function(d) { return d.target.x; })
-          .attr("y2", function(d) { return d.target.y; });
-    
+        .attr("class", "link")
+        .attr("x1", function(d) { return d.source.x; })
+        .attr("y1", function(d) { return d.source.y; })
+        .attr("x2", function(d) { return d.target.x; })
+        .attr("y2", function(d) { return d.target.y; });
       // Exit any old links.
       link.exit().remove();
-    
       // Update the nodes
       node = vis.selectAll("circle.node")
-          .data(nodes, function(d) {return d.id; })
-          .style("fill", function(d) {
-            return '#2960b5';
-          });
-    
-      // Enter any new nodes.
+        .data(nodes, function(d) {return d.id; })
+        .style("fill", function(d) {
+          return '#2960b5';
+        });
+        // Enter any new nodes.
       node.enter().append("svg:circle")
-          .attr("class", "node")
-          .attr("cx", function(d) {return d.x; })
-          .attr("cy", function(d) {return d.y; })
-          .attr("r", function(d) {
-              
-              //Get the net positive reaction
-              var netPositive = d.ups - d.downs;
-              var relativePositivity = netPositive/avgNetPositive;
-              //Scale the radii based on the logarithmic scale defined earlier
-              return radius(netPositive);
-      
-          
-          })
-          .attr("opacity",function(d) {
-            var thisNode = d3.select(this);
-            var thisRadius = thisNode[0][0]["r"]["animVal"]["value"];
-            if (thisRadius <= 10) {
-              
-              return 0.3;
-
-            } else if (thisRadius <= 15) {
-
-              return 0.5;
-            
-            } else if (thisRadius <= 20) {
-
-              return 0.6;
-
-            } else if (thisRadius <= 25) {
-
-              return 0.8;
-
-            } else {
-
-              return 0.9;
-
-            }
-          })
-          .style("fill", function(d) {
-            return '#2960b5'
-          })
-          //.on("click", click)
-          .call(force.drag);
-    
-      // Exit any old nodes.
+        .attr("class", "node")
+        .attr("cx", function(d) {return d.x; })
+        .attr("cy", function(d) {return d.y; })
+        .attr("r", function(d) {
+            //Get the net positive reaction
+            var netPositive = d.ups - d.downs;
+            var relativePositivity = netPositive/avgNetPositive;
+            //Scale the radii based on the logarithmic scale defined earlier
+            return radius(netPositive);
+        })
+        .style("fill", function(d) {
+          return '#2960b5';
+        })
+        // Allow dragging on click
+        .call(force.drag);
+        // Exit any old nodes.
       node.exit().remove();
       //This will add the name of the author to the node HTML
       node.append("author").text(function(d) {return d.author});
-      
       //Add the body of the comment to the node
-      node.append("comment").text(function(d) {return Encoder.htmlDecode(d.body_html)});
-
+      node.append("comment").text(function(d) {return Encoder.htmlDecode(d.body_html)}); 
       //Add the UNIX timestamp to the node
       node.append("timestamp").text(function(d) {return moment.unix(d.created_utc).fromNow();})
-      
+      //On load, assign the root node to the tooltip
+      numberOfNodes = node[0].length;
+      rootNode = d3.select(node[0][parseInt(numberOfNodes) - 1]);
+      rootNodeComment = rootNode.select("comment").text();
+      rootNodeAuthor = rootNode.select("author").text();
+      rootNodeTimestamp = rootNode.select("timestamp").text();
 
-       //On load, assign the root node to the tooltip
-       numberOfNodes = node[0].length;
-       rootNode = d3.select(node[0][parseInt(numberOfNodes) - 1]);
-       rootNodeComment = rootNode.select("comment").text();
-       rootNodeAuthor = rootNode.select("author").text();
-       rootNodeTimestamp = rootNode.select("timestamp").text();
+      // Create the tooltip div for the comments
+    tooltip_div = d3.select("#"+root_id).append("div")
+        .attr("class", "tooltip")               
+          .style("opacity", 1);
+    //Add the HTML to the tooltip for the root
+      tooltip_div .html("<span class='commentAuthor'>" + rootNodeAuthor + "</span><span class='bulletTimeAgo'>&bull;</span><span class='timestamp'>" + rootNodeTimestamp + "</span><br>" + rootNodeComment)
+        //Position the tooltip based on the position of the current node, and it's size
+        .style("left", (rootNode.attr("cx") - (-rootNode.attr("r")) - (-9)) + "px")   
+        .style("top", (rootNode.attr("cy") - 15)  + "px");    
 
-       div .html("<span class='commentAuthor'>" + rootNodeAuthor + "</span><span class='bulletTimeAgo'>&bull;</span><span class='timestamp'>" + rootNodeTimestamp + "</span><br>" + rootNodeComment)
-               //Position the tooltip based on the position of the current node, and it's size
-                .style("left", (rootNode.attr("cx") - (-rootNode.attr("r")) - (-9)) + "px")   
-                .style("top", (rootNode.attr("cy") - 15)  + "px");    
-      //div.html()
       node.on("mouseover", function() {
-         currentNode = d3.select(this);
-         currentTitle = currentNode.select("comment").text();
-         currentAuthor = currentNode.select("author").text();
-         currentTimestamp = currentNode.select("timestamp").text();
-        div.transition()        
-                .duration(200)      
-                .style("opacity", 1);
-        
-        
-        div .html("<span class='commentAuthor'>" + currentAuthor + "</span><span class='bulletTimeAgo'>&bull;</span><span class='timestamp'>" + currentTimestamp + "</span><br>" + currentTitle)
+        currentNode = d3.select(this);
+        currentTitle = currentNode.select("comment").text();
+        currentAuthor = currentNode.select("author").text();
+        currentTimestamp = currentNode.select("timestamp").text();
+      tooltip_div.transition()        
+         .duration(200)      
+         .style("opacity", 1);
+      // Add the HTML for all other tooltips on mouseover
+      tooltip_div .html("<span class='commentAuthor'>" + currentAuthor + "</span><span class='bulletTimeAgo'>&bull;</span><span class='timestamp'>" + currentTimestamp + "</span><br>" + currentTitle)
+                  //Position the tooltip based on the position of the current node, and it's size
+                  .style("left", (currentNode.attr("cx") - (-currentNode.attr("r")) - (-9)) + "px")   
+                  .style("top", (currentNode.attr("cy") - 15)  + "px");    
+       });
 
-                //Position the tooltip based on the position of the current node, and it's size
-                .style("left", (currentNode.attr("cx") - (-currentNode.attr("r")) - (-9)) + "px")   
-                .style("top", (currentNode.attr("cy") - 15)  + "px");    
-      
-      });
+      // Fade out the tooltip on mouseout
       node.on("mouseout", function(d) {       
-            div.transition()        
-                .duration(500)      
-                .style("opacity", 1);
+          tooltip_div.transition()        
+              .duration(500)      
+              .style("opacity", 1);
       });
+      // Optimize the JSON output of Reddit for D3
       function flatten(root) {
-                    
-          var nodes = [], i = 0, j = 0;
-          function recurse(node) {
-            
-            if (node['data']['replies'] != "" && node['kind'] != "more") {
-                node['data']['replies']['data']['children'].forEach(recurse);
-            }
-            if (node['kind'] !="more") {
-                //Add an ID value to the node starting at 1
-                node.data.id = ++i;
-                node.data.name = node.data.body;
-                //Put the replies in the key 'children' to work with the tree layout
-                if (node.data.replies != "") {
-                      
-                     node.data.children = node.data.replies.data.children;
-                     //Remove the extra 'data' layer for each child
-                     for (j=0; j < node.data.children.length; j++) {
-                        node.data.children[j] = node.data.children[j].data;
-                     }
-                     
-                } else {
-                    node.data.children = "";
-                }
-                var comment = node.data;
-                nodes.push(comment);
-            }
-          }
-          recurse(root);
-          return nodes;  
-      }
-       function optimize(linkArray) {
-        optimizedArray = [];
-        for (k=0; k < linkArray.length; k++) {
-            if(typeof linkArray[k].target.count == 'undefined') {
-                optimizedArray.push(linkArray[k]);
-            }
-            else {
-              
-            }
-        }
-        return optimizedArray;
-    
-    }
-
-    function getAvgNetPositive() {
-      var sum = 0;
-      netPositiveArray = []
-      //Select all the nodes
-      var allNodes = d3.selectAll(nodes)[0];
-      //For each node, get the net positive votes and add it to the sum
-      for (i=0; i < allNodes.length; i++) {
-        var netPositiveEach = allNodes[i]["ups"] - allNodes[i]["downs"];
-        sum += netPositiveEach;
-        netPositiveArray.push(netPositiveEach);
-      }
-      var avgNetPositive = sum/allNodes.length;
-      return avgNetPositive;
-
-    }
-      
-    }
-
-     function update2(root) {
-       var w = 960,
-        h = 900,
-        node,
-        link,
-        root;
-        
-      var force = d3.layout.force()
-          .on("tick", function(e) {
-               var kx = .4 * e.alpha, ky = 1.4 * e.alpha;
-               links.forEach(function(d, i) {
-                  d.target.x += (d.source.x - d.target.x) * kx;
-                  d.target.y += (d.source.y + 300 - d.target.y) * ky;
-              });
-              link.attr("x1", function(d) { return d.source.x; })
-                  .attr("y1", function(d) { return d.source.y; })
-                  .attr("x2", function(d) { return d.target.x; })
-                  .attr("y2", function(d) { return d.target.y; });
-            
-              node.attr("cx", function(d) { return d.x; })
-                  .attr("cy", function(d) { return d.y; });
-          })
-          .size([w, h]);
                   
-        var vis = d3.select("#chart").append("svg:svg")
-            .attr("width", w)
-            .attr("height", h);
-                  
-                 
-         nodes = flatten(root),
-         links = optimize(d3.layout.tree().links(nodes));
-         avgNetPositive = getAvgNetPositive();
-         maxNetPositive = d3.max(netPositiveArray);
-         minNetPositive = d3.min(netPositiveArray);
-         // Create a logarithmic scale that sizes the nodes
-         radius = d3.scale.pow().exponent(.3).domain([minNetPositive,maxNetPositive]).range([5,30]);
-         root.data.fixed = true;
-         root.data.x = w/2;
-         root.data.y = 50;
-      // Restart the force layout.
-      force
-          .nodes(nodes)
-          .links(links)
-          .charge(-250)
-          .gravity(0)
-          .start();
-      
-      
-      // Update the links
-      link = vis.selectAll("line.link")
-          .data(links, function(d) { return d.target.id; });
-    
-      // Enter any new links.
-      link.enter().insert("svg:line", ".node")
-          .attr("class", "link")
-          .attr("x1", function(d) { return d.source.x; })
-          .attr("y1", function(d) { return d.source.y; })
-          .attr("x2", function(d) { return d.target.x; })
-          .attr("y2", function(d) { return d.target.y; });
-    
-      // Exit any old links.
-      link.exit().remove();
-    
-      // Update the nodes
-      node = vis.selectAll("circle.node")
-          .data(nodes, function(d) {return d.id; })
-          .style("fill", function(d) {
-            return '#2960b5';
-          });
-    
-      // Enter any new nodes.
-      node.enter().append("svg:circle")
-          .attr("class", "node")
-          .attr("cx", function(d) {return d.x; })
-          .attr("cy", function(d) {return d.y; })
-          .attr("r", function(d) {
-              
-              //Get the net positive reaction
-              var netPositive = d.ups - d.downs;
-              var relativePositivity = netPositive/avgNetPositive;
-              //Scale the radii based on the logarithmic scale defined earlier
-              return radius(netPositive);
-      
+        var nodes = [], i = 0, j = 0;
+        function recurse(node) {
           
-          })
-          .attr("opacity",function(d) {
-            var thisNode = d3.select(this);
-            var thisRadius = thisNode[0][0]["r"]["animVal"]["value"];
-            if (thisRadius <= 10) {
-              
-              return 0.3;
-
-            } else if (thisRadius <= 15) {
-
-              return 0.5;
-            
-            } else if (thisRadius <= 20) {
-
-              return 0.6;
-
-            } else if (thisRadius <= 25) {
-
-              return 0.8;
-
-            } else {
-
-              return 0.9;
-
-            }
-          })
-          .style("fill", function(d) {
-            return '#2960b5'
-          })
-          //.on("click", click)
-          .call(force.drag);
-    
-      // Exit any old nodes.
-      node.exit().remove();
-      //This will add the name of the author to the node HTML
-      node.append("author").text(function(d) {return d.author});
-      
-      //Add the body of the comment to the node
-      node.append("comment").text(function(d) {return Encoder.htmlDecode(d.body_html)});
-
-      //Add the UNIX timestamp to the node
-      node.append("timestamp").text(function(d) {return moment.unix(d.created_utc).fromNow();})
-      
-
-       //On load, assign the root node to the tooltip
-       numberOfNodes = node[0].length;
-       rootNode = d3.select(node[0][parseInt(numberOfNodes) - 1]);
-       rootNodeComment = rootNode.select("comment").text();
-       rootNodeAuthor = rootNode.select("author").text();
-       rootNodeTimestamp = rootNode.select("timestamp").text();
-
-       div .html("<span class='commentAuthor'>" + rootNodeAuthor + "</span><span class='bulletTimeAgo'>&bull;</span><span class='timestamp'>" + rootNodeTimestamp + "</span><br>" + rootNodeComment)
-               //Position the tooltip based on the position of the current node, and it's size
-                .style("left", (rootNode.attr("cx") - (-rootNode.attr("r")) - (-9)) + "px")   
-                .style("top", (rootNode.attr("cy") - 15)  + "px");    
-      //div.html()
-      node.on("mouseover", function() {
-         currentNode = d3.select(this);
-         currentTitle = currentNode.select("comment").text();
-         currentAuthor = currentNode.select("author").text();
-         currentTimestamp = currentNode.select("timestamp").text();
-        div.transition()        
-                .duration(200)      
-                .style("opacity", 1);
-        
-        
-        div .html("<span class='commentAuthor'>" + currentAuthor + "</span><span class='bulletTimeAgo'>&bull;</span><span class='timestamp'>" + currentTimestamp + "</span><br>" + currentTitle)
-
-                //Position the tooltip based on the position of the current node, and it's size
-                .style("left", (currentNode.attr("cx") - (-currentNode.attr("r")) - (-9)) + "px")   
-                .style("top", (currentNode.attr("cy") - 15)  + "px");    
-      
-      });
-      node.on("mouseout", function(d) {       
-            div.transition()        
-                .duration(500)      
-                .style("opacity", 1);
-      });
-      function flatten(root) {
-                    
-          var nodes = [], i = 0, j = 0;
-          function recurse(node) {
-            
-            if (node['data']['replies'] != "" && node['kind'] != "more") {
-                node['data']['replies']['data']['children'].forEach(recurse);
-            }
-            if (node['kind'] !="more") {
-                //Add an ID value to the node starting at 1
-                node.data.id = ++i;
-                node.data.name = node.data.body;
-                //Put the replies in the key 'children' to work with the tree layout
-                if (node.data.replies != "") {
-                      
-                     node.data.children = node.data.replies.data.children;
-                     //Remove the extra 'data' layer for each child
-                     for (j=0; j < node.data.children.length; j++) {
-                        node.data.children[j] = node.data.children[j].data;
-                     }
-                     
-                } else {
-                    node.data.children = "";
-                }
-                var comment = node.data;
-                nodes.push(comment);
-            }
+          if (node['data']['replies'] != "" && node['kind'] != "more") {
+              node['data']['replies']['data']['children'].forEach(recurse);
           }
-          recurse(root);
-          return nodes;  
-      }
-       function optimize(linkArray) {
-        optimizedArray = [];
-        for (k=0; k < linkArray.length; k++) {
-            if(typeof linkArray[k].target.count == 'undefined') {
-                optimizedArray.push(linkArray[k]);
-            }
-            else {
-              
-            }
+          if (node['kind'] !="more") {
+              //Add an ID value to the node starting at 1
+              node.data.id = ++i;
+              node.data.name = node.data.body;
+              //Put the replies in the key 'children' to work with the tree layout
+              if (node.data.replies != "") {
+                    
+                   node.data.children = node.data.replies.data.children;
+                   //Remove the extra 'data' layer for each child
+                   for (j=0; j < node.data.children.length; j++) {
+                      node.data.children[j] = node.data.children[j].data;
+                   }
+                   
+              } else {
+                  node.data.children = "";
+              }
+              var comment = node.data;
+              nodes.push(comment);
+          }
         }
-        return optimizedArray;
-    
-    }
-
-    function getAvgNetPositive() {
-      var sum = 0;
-      netPositiveArray = []
-      //Select all the nodes
-      var allNodes = d3.selectAll(nodes)[0];
-      //For each node, get the net positive votes and add it to the sum
-      for (i=0; i < allNodes.length; i++) {
-        var netPositiveEach = allNodes[i]["ups"] - allNodes[i]["downs"];
-        sum += netPositiveEach;
-        netPositiveArray.push(netPositiveEach);
+        recurse(root);
+        return nodes;  
       }
-      var avgNetPositive = sum/allNodes.length;
-      return avgNetPositive;
-
-    }
+      // Optimize the JSON for use with Links
+      function optimize(linkArray) {
+          optimizedArray = [];
+          for (k=0; k < linkArray.length; k++) {
+              if(typeof linkArray[k].target.count == 'undefined') {
+                  optimizedArray.push(linkArray[k]);
+              }
+          }
+          return optimizedArray;
+      }
+      // Get the average net positive upvotes for use in sizing
+      function getAvgNetPositive() {
+        var sum = 0;
+        netPositiveArray = []
+        //Select all the nodes
+        var allNodes = d3.selectAll(nodes)[0];
+        //For each node, get the net positive votes and add it to the sum
+        for (i=0; i < allNodes.length; i++) {
+          var netPositiveEach = allNodes[i]["ups"] - allNodes[i]["downs"];
+          sum += netPositiveEach;
+          netPositiveArray.push(netPositiveEach);
+        }
+        var avgNetPositive = sum/allNodes.length;
+        return avgNetPositive;
+      }
+      function tick(e) {
+         var kx = .4 * e.alpha, ky = 1.4 * e.alpha;
+         links.forEach(function(d, i) {
+            d.target.x += (d.source.x - d.target.x) * kx;
+            d.target.y += (d.source.y + 80 - d.target.y) * ky;
+        });
+        link.attr("x1", function(d) { return d.source.x; })
+            .attr("y1", function(d) { return d.source.y; })
+            .attr("x2", function(d) { return d.target.x; })
+            .attr("y2", function(d) { return d.target.y; });
       
-    }  
+        node.attr("cx", function(d) { return d.x; })
+            .attr("cy", function(d) { return d.y; });
+      }
+      // // Remove the animation effect of the force layout
+      // while ((force.alpha() > 1e-2) && (k < 150)) {
+      //     force.tick(),
+      //     k = k + 1;
+      // }
+}
 
-    
-  
-   
-
-    
-     setInterval(function(){ 
-       $("#chart a[href^='http://']").attr("target","_blank");
-        $("#chart a[href^='https://']").attr("target","_blank");
-     }, 1000);
+// Make all links open in a new browser tab   
+setInterval(function(){ 
+ $("#chart a[href^='http://']").attr("target","_blank");
+  $("#chart a[href^='https://']").attr("target","_blank");
+}, 1000);
     

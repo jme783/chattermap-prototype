@@ -32,6 +32,11 @@ svg {
     margin: 0 auto;
     position: relative;
 }
+.chattermap-map {
+    width: 980px;
+    height: 1000px;
+    position: relative;
+}
 
 .node {
   stroke: #fff;
